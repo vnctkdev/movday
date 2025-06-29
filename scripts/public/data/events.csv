@@ -1,12 +1,9 @@
 ﻿id,title,description,date,location,type,genre,image,source,link,created_at
-cgv_1,사업자정보확인,사업자정보확인 - CGV에서 진행되는 특별한 이벤트입니다.,2025-07-18,CGV 부산,행사,드라마,https://picsum.photos/300/200?random=1,CGV,https://www.cgv.co.kr#none,2025-06-29T20:41:36.287275
-megabox_2,당첨자발표,당첨자발표 - 메가박스에서 진행되는 특별한 이벤트입니다.,2025-06-30,메가박스 부산,행사,드라마,https://picsum.photos/300/200?random=201,메가박스,https://www.megabox.co.kr,2025-06-29T20:41:40.590401
-megabox_3,당첨자발표,당첨자발표 - 메가박스에서 진행되는 특별한 이벤트입니다.,2025-07-09,메가박스 강남,체험,SF,https://picsum.photos/300/200?random=202,메가박스,https://www.megabox.co.kr,2025-06-29T20:41:40.591522
-maxmovie_4,제29회 부천국제판타스틱영화제로,제29회 부천국제판타스틱영화제로 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-12,MaxMovie 웹사이트,행사,로맨스,https://picsum.photos/300/200?random=303,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.408448
-maxmovie_5,[439탄] 블라인드 시사회,[439탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-18,MaxMovie 앱,프로모션,로맨스,https://picsum.photos/300/200?random=304,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.408784
-maxmovie_6,[438탄] 블라인드 시사회,[438탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-02,MaxMovie 웹사이트,굿즈배포,코미디,https://picsum.photos/300/200?random=305,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.409062
-maxmovie_7,<하이파이브> 시사회,<하이파이브> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-09,전국 영화관,행사,액션,https://picsum.photos/300/200?random=306,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.409323
-maxmovie_8,<366일> 시사회,<366일> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-03,MaxMovie 웹사이트,프로모션,코미디,https://picsum.photos/300/200?random=307,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.409580
-maxmovie_9,<브레이킹 아이스> 시사회,<브레이킹 아이스> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-29,MaxMovie 앱,프로모션,코미디,https://picsum.photos/300/200?random=308,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.410112
-maxmovie_10,<나를 모르는 그녀의 세계에서> 시사회,<나를 모르는 그녀의 세계에서> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-15,전국 영화관,굿즈배포,호러,https://picsum.photos/300/200?random=309,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.410481
-maxmovie_11,[437탄] 블라인드 시사회,[437탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-06-30,MaxMovie 웹사이트,행사,애니메이션,https://picsum.photos/300/200?random=310,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:41:41.411380
+maxmovie_1,제29회 부천국제판타스틱영화제로,제29회 부천국제판타스틱영화제로 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-19,MaxMovie 앱,행사,로맨스,https://picsum.photos/300/200?random=300,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.990974
+maxmovie_2,[439탄] 블라인드 시사회,[439탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-08,MaxMovie 앱,프로모션,SF,https://picsum.photos/300/200?random=301,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.992097
+maxmovie_3,[438탄] 블라인드 시사회,[438탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-05,전국 영화관,굿즈배포,액션,https://picsum.photos/300/200?random=302,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.992972
+maxmovie_4,<하이파이브> 시사회,<하이파이브> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-27,MaxMovie 온라인,체험,스릴러,https://picsum.photos/300/200?random=303,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.995857
+maxmovie_5,<366일> 시사회,<366일> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-21,MaxMovie 웹사이트,프로모션,드라마,https://picsum.photos/300/200?random=304,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.997240
+maxmovie_6,<브레이킹 아이스> 시사회,<브레이킹 아이스> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-14,전국 영화관,체험,로맨스,https://picsum.photos/300/200?random=305,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:53.998170
+maxmovie_7,<나를 모르는 그녀의 세계에서> 시사회,<나를 모르는 그녀의 세계에서> 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-06,MaxMovie 웹사이트,시사회,애니메이션,https://picsum.photos/300/200?random=306,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:54.009645
+maxmovie_8,[437탄] 블라인드 시사회,[437탄] 블라인드 시사회 - MaxMovie에서 진행되는 특별한 이벤트입니다.,2025-07-11,MaxMovie 온라인,시사회,드라마,https://picsum.photos/300/200?random=307,MaxMovie,https://www.maxmovie.com/event,2025-06-29T20:57:54.011526

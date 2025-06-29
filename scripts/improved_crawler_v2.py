@@ -8,7 +8,7 @@ import random
 import os
 import re
 
-class AdvancedMovieEventCrawler:
+class ImprovedMovieEventCrawler:
     def __init__(self):
         self.events = []
         self.headers = {
@@ -16,7 +16,7 @@ class AdvancedMovieEventCrawler:
         }
     
     def clean_title(self, title):
-        """제목 정리 및 개선"""
+        """제목 정리 및 개선 - 강화된 필터링"""
         if not title:
             return ""
         
@@ -25,15 +25,80 @@ class AdvancedMovieEventCrawler:
         title = title.strip()
         
         # 너무 짧은 제목 필터링
-        if len(title) < 3:
+        if len(title) < 5:
             return ""
         
-        # 의미없는 제목 필터링
-        meaningless = ['더보기', '이전', '다음', '닫기', '보기', '이벤트', 'EVENT']
-        if any(word in title for word in meaningless):
+        # 의미없는 제목 필터링 - 강화된 버전
+        meaningless = [
+            '더보기', '이전', '다음', '닫기', '보기', '이벤트', 'EVENT',
+            '사업자정보확인', '당첨자발표', '당첨자', '발표', '확인',
+            '공지사항', '안내', '알림', '정보', '관련', '문의',
+            '고객센터', '고객지원', '고객서비스', '고객안내',
+            '이용약관', '개인정보처리방침', '개인정보', '약관',
+            '로그인', '회원가입', '마이페이지', '예매', '예약',
+            '상영시간', '상영관', '영화관', '극장', '매장',
+            '홈', '메인', '메뉴', '검색', '찾기', '바로가기',
+            '새창', '팝업', '레이어', '모달', '다이얼로그',
+            '버튼', '링크', '클릭', '터치', '스와이프',
+            '로딩', '로드', '업로드', '다운로드', '업데이트',
+            '새로고침', '새로고침', '새로고침', '새로고침',
+            'copyright', 'all rights reserved', 'copyright',
+            '주식회사', '㈜', '(주)', '유한회사', '(유)',
+            'corporation', 'company', 'inc', 'ltd', 'co',
+            '서울', '부산', '대구', '인천', '광주', '대전', '울산',
+            '강남', '강북', '강서', '강동', '서초', '송파',
+            '마포', '영등포', '용산', '성동', '광진', '동대문',
+            '중랑', '성북', '강북', '도봉', '노원', '은평',
+            '양천', '구로', '금천', '동작', '관악', '서초',
+            '강남', '송파', '강동', '광주', '경기', '인천',
+            '부산', '대구', '울산', '대전', '세종', '충북',
+            '충남', '전북', '전남', '경북', '경남', '제주'
+        ]
+        
+        # 정확히 일치하는 경우 제외
+        if title.lower() in [word.lower() for word in meaningless]:
+            return ""
+        
+        # 포함하는 경우도 제외 (더 엄격하게)
+        for word in meaningless:
+            if word.lower() in title.lower():
+                return ""
+        
+        # 숫자만 있는 경우 제외
+        if re.match(r'^[\d\s\-\.]+$', title):
+            return ""
+        
+        # 특수문자만 있는 경우 제외
+        if re.match(r'^[^\w가-힣]+$', title):
             return ""
         
         return title
+    
+    def is_movie_related(self, title):
+        """영화 관련 이벤트인지 확인"""
+        if not title:
+            return False
+        
+        # 영화 관련 키워드
+        movie_keywords = [
+            '시사회', '프리미어', '개봉', '상영', '영화', '무비', 'movie',
+            '감독', '배우', '주연', '조연', '출연', '연출', '제작',
+            '스틸컷', '포스터', '예고편', '트레일러', '메이킹',
+            '인터뷰', '토크', '팬미팅', '사인회', '오프라인',
+            '굿즈', '기념품', '포토카드', '포토존', '체험',
+            '이벤트', '행사', '프로모션', '캠페인', '콘서트',
+            '페스티벌', '영화제', '어워드', '시상식', '수상',
+            '특별', '한정', '단독', '독점', '최초', '최고',
+            '블라인드', '미리보기', '시연', '체험관', '전시',
+            '갤러리', '박물관', '아카이브', '컬렉션', '전시회'
+        ]
+        
+        title_lower = title.lower()
+        for keyword in movie_keywords:
+            if keyword in title_lower:
+                return True
+        
+        return False
     
     def extract_image_url(self, element, base_url):
         """이미지 URL 추출"""
@@ -80,19 +145,19 @@ class AdvancedMovieEventCrawler:
                     response.raise_for_status()
                     soup = BeautifulSoup(response.content, 'html.parser')
                     
-                    # CGV 이벤트 요소 찾기 - 다양한 선택자 시도
+                    # CGV 이벤트 요소 찾기 - 더 구체적인 선택자
                     event_elements = (
                         soup.find_all('div', class_='event_card') or
                         soup.find_all('div', class_='event-item') or
                         soup.find_all('li', class_='event-list') or
                         soup.find_all('div', class_='event') or
                         soup.find_all('article') or
-                        soup.find_all('a', href=lambda x: x and 'event' in x)
+                        soup.find_all('a', href=lambda x: x and 'event' in x and 'detail' in x)
                     )
                     
                     print(f"CGV {url}에서 {len(event_elements)}개 이벤트 요소 발견")
                     
-                    for element in event_elements[:6]:
+                    for element in event_elements[:8]:
                         try:
                             # 제목 추출 - 다양한 방법 시도
                             title = ""
@@ -105,7 +170,7 @@ class AdvancedMovieEventCrawler:
                                 title_elem = element.find(selector)
                                 if title_elem:
                                     title = title_elem.get_text(strip=True)
-                                    if self.clean_title(title):
+                                    if self.clean_title(title) and self.is_movie_related(title):
                                         break
                             
                             # 제목이 없으면 전체 텍스트에서 추출
@@ -114,12 +179,12 @@ class AdvancedMovieEventCrawler:
                                 # 첫 번째 의미있는 텍스트 추출
                                 lines = [line.strip() for line in title.split('\n') if line.strip()]
                                 for line in lines:
-                                    if self.clean_title(line) and len(line) > 5:
+                                    if self.clean_title(line) and self.is_movie_related(line) and len(line) > 5:
                                         title = line
                                         break
                             
                             title = self.clean_title(title)
-                            if not title:
+                            if not title or not self.is_movie_related(title):
                                 continue
                             
                             # 이미지 URL 추출
@@ -201,7 +266,7 @@ class AdvancedMovieEventCrawler:
                 
                 print(f"메가박스에서 {len(event_elements)}개 이벤트 요소 발견")
                 
-                for element in event_elements[:8]:
+                for element in event_elements[:10]:
                     try:
                         # 제목 추출
                         title = ""
@@ -214,7 +279,7 @@ class AdvancedMovieEventCrawler:
                             title_elem = element.find(selector)
                             if title_elem:
                                 title = title_elem.get_text(strip=True)
-                                if self.clean_title(title):
+                                if self.clean_title(title) and self.is_movie_related(title):
                                     break
                         
                         # 제목이 없으면 전체 텍스트에서 추출
@@ -222,12 +287,12 @@ class AdvancedMovieEventCrawler:
                             title = element.get_text(strip=True)
                             lines = [line.strip() for line in title.split('\n') if line.strip()]
                             for line in lines:
-                                if self.clean_title(line) and len(line) > 5:
+                                if self.clean_title(line) and self.is_movie_related(line) and len(line) > 5:
                                     title = line
                                     break
                         
                         title = self.clean_title(title)
-                        if not title:
+                        if not title or not self.is_movie_related(title):
                             continue
                         
                         # 이미지 URL 추출
@@ -297,7 +362,7 @@ class AdvancedMovieEventCrawler:
                 
                 print(f"MaxMovie에서 {len(event_elements)}개 이벤트 요소 발견")
                 
-                for i, element in enumerate(event_elements[:12]):  # 최대 12개
+                for i, element in enumerate(event_elements[:15]):  # 최대 15개
                     try:
                         # 제목 추출 - h3 태그에서 직접 추출
                         title = ""
@@ -309,7 +374,7 @@ class AdvancedMovieEventCrawler:
                             title = title_elem.get_text(strip=True)
                         
                         title = self.clean_title(title)
-                        if not title:
+                        if not title or not self.is_movie_related(title):
                             continue
                         
                         # 설명 추출
@@ -383,7 +448,8 @@ class AdvancedMovieEventCrawler:
     def run(self):
         """크롤링 실행"""
         print("=" * 50)
-        print("고급 영화 이벤트 크롤링을 시작합니다...")
+        print("개선된 영화 이벤트 크롤링을 시작합니다...")
+        print("의미없는 텍스트 필터링 강화!")
         print("=" * 50)
         
         start_time = time.time()
@@ -403,5 +469,5 @@ class AdvancedMovieEventCrawler:
         print("=" * 50)
 
 if __name__ == "__main__":
-    crawler = AdvancedMovieEventCrawler()
+    crawler = ImprovedMovieEventCrawler()
     crawler.run() 
