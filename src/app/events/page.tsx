@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Search, Calendar, MapPin, Tag, ExternalLink, ChevronLeft } from 'lucide-react'
+import { Search, Calendar, Tag, ExternalLink, ChevronLeft } from 'lucide-react'
 
 interface Event {
   id: string
