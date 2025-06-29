@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Filter, Calendar, MapPin, Film, ArrowLeft } from 'lucide-react'
+import { Search, Filter, Calendar, MapPin, Tag, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Event {
   id: string
@@ -15,99 +15,62 @@ interface Event {
   image: string
   source: string
   link: string
+  created_at: string
+}
+
+interface ApiResponse {
+  events: Event[]
+  total: number
+  page: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
 }
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('')
   const [selectedGenre, setSelectedGenre] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [selectedSource, setSelectedSource] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [total, setTotal] = useState(0)
+
+  const eventTypes = ['시사회', '굿즈배포', '프로모션', '체험', '행사']
+  const genres = ['액션', '로맨스', '드라마', '코미디', '스릴러', 'SF', '호러']
+  const sources = ['CGV', '롯데시네마', '메가박스', '영화사', '독립영화관', '문화센터']
 
   useEffect(() => {
-    // 실제로는 API에서 데이터를 가져옴
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch('/data/events.json')
-        const data = await response.json()
-        setEvents(data)
-        setFilteredEvents(data)
-      } catch (error) {
-        console.error('이벤트 데이터를 불러오는데 실패했습니다:', error)
-        // 샘플 데이터 사용
-        const sampleEvents: Event[] = [
-          {
-            id: '1',
-            title: '영화 시사회 이벤트',
-            description: '신작 영화 시사회 참여 이벤트',
-            date: '2024-12-20',
-            location: 'CGV 강남',
-            type: '시사회',
-            genre: '액션',
-            image: 'https://picsum.photos/300/200?random=1',
-            source: 'CGV',
-            link: 'https://www.cgv.co.kr/event'
-          },
-          {
-            id: '2',
-            title: '영화 굿즈 배포 이벤트',
-            description: '영화 관련 굿즈 무료 배포',
-            date: '2024-12-25',
-            location: '롯데시네마 홍대',
-            type: '굿즈배포',
-            genre: '로맨스',
-            image: 'https://picsum.photos/300/200?random=2',
-            source: '롯데시네마',
-            link: 'https://www.lottecinema.co.kr'
-          },
-          {
-            id: '3',
-            title: '영화 프로모션 이벤트',
-            description: '영화 관람 후 리뷰 작성 이벤트',
-            date: '2024-12-30',
-            location: '메가박스 코엑스',
-            type: '프로모션',
-            genre: '드라마',
-            image: 'https://picsum.photos/300/200?random=3',
-            source: '메가박스',
-            link: 'https://www.megabox.co.kr'
-          }
-        ]
-        setEvents(sampleEvents)
-        setFilteredEvents(sampleEvents)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchEvents()
-  }, [])
+  }, [searchTerm, selectedType, selectedGenre, selectedSource, currentPage])
 
-  useEffect(() => {
-    let filtered = events
+  const fetchEvents = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: '8'
+      })
 
-    if (searchTerm) {
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.location.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      if (searchTerm) params.append('search', searchTerm)
+      if (selectedType) params.append('type', selectedType)
+      if (selectedGenre) params.append('genre', selectedGenre)
+      if (selectedSource) params.append('source', selectedSource)
+
+      const response = await fetch(`/api/events?${params}`)
+      const data: ApiResponse = await response.json()
+
+      setEvents(data.events)
+      setTotalPages(data.totalPages)
+      setTotal(data.total)
+    } catch (error) {
+      console.error('이벤트 데이터를 불러오는데 실패했습니다:', error)
+    } finally {
+      setLoading(false)
     }
-
-    if (selectedType) {
-      filtered = filtered.filter(event => event.type === selectedType)
-    }
-
-    if (selectedGenre) {
-      filtered = filtered.filter(event => event.genre === selectedGenre)
-    }
-
-    setFilteredEvents(filtered)
-  }, [events, searchTerm, selectedType, selectedGenre])
-
-  const eventTypes = [...new Set(events.map(event => event.type))]
-  const genres = [...new Set(events.map(event => event.genre))]
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -118,15 +81,36 @@ export default function EventsPage() {
     })
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">이벤트를 불러오는 중...</p>
-        </div>
-      </div>
-    )
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedType('')
+    setSelectedGenre('')
+    setSelectedSource('')
+    setCurrentPage(1)
+  }
+
+  const getTypeColor = (type: string) => {
+    const colors = {
+      '시사회': 'bg-blue-100 text-blue-800',
+      '굿즈배포': 'bg-green-100 text-green-800',
+      '프로모션': 'bg-purple-100 text-purple-800',
+      '체험': 'bg-orange-100 text-orange-800',
+      '행사': 'bg-red-100 text-red-800'
+    }
+    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getGenreColor = (genre: string) => {
+    const colors = {
+      '액션': 'bg-red-100 text-red-800',
+      '로맨스': 'bg-pink-100 text-pink-800',
+      '드라마': 'bg-blue-100 text-blue-800',
+      '코미디': 'bg-yellow-100 text-yellow-800',
+      '스릴러': 'bg-purple-100 text-purple-800',
+      'SF': 'bg-indigo-100 text-indigo-800',
+      '호러': 'bg-gray-100 text-gray-800'
+    }
+    return colors[genre as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
   return (
@@ -137,15 +121,14 @@ export default function EventsPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
-                <ArrowLeft className="h-5 w-5 mr-2" />
+                <ChevronLeft className="h-5 w-5 mr-2" />
                 홈으로
               </Link>
             </div>
             <div className="flex items-center">
-              <Film className="h-8 w-8 text-blue-600" />
-              <h1 className="ml-2 text-xl font-bold text-gray-900">MovDay</h1>
+              <h1 className="text-xl font-bold text-gray-900">영화 이벤트</h1>
             </div>
-            <div className="w-20"></div> {/* Spacer for centering */}
+            <div className="w-20"></div>
           </div>
         </div>
       </header>
@@ -153,9 +136,9 @@ export default function EventsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
-            <div className="md:col-span-2">
+            <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
@@ -168,97 +151,203 @@ export default function EventsPage() {
               </div>
             </div>
 
-            {/* Type Filter */}
-            <div>
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">모든 유형</option>
                 {eventTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
-            </div>
 
-            {/* Genre Filter */}
-            <div>
               <select
                 value={selectedGenre}
                 onChange={(e) => setSelectedGenre(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">모든 장르</option>
                 {genres.map(genre => (
                   <option key={genre} value={genre}>{genre}</option>
                 ))}
               </select>
+
+              <select
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">모든 출처</option>
+                {sources.map(source => (
+                  <option key={source} value={source}>{source}</option>
+                ))}
+              </select>
+
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                초기화
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            총 <span className="font-semibold text-blue-600">{filteredEvents.length}</span>개의 이벤트를 찾았습니다
-          </p>
+        {/* Results Info */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm text-gray-600">
+            총 {total}개의 이벤트를 찾았습니다.
+          </div>
+          <Link
+            href="/admin"
+            className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            관리자 페이지 →
+          </Link>
         </div>
 
         {/* Events Grid */}
-        {filteredEvents.length === 0 ? (
-          <div className="text-center py-12">
-            <Film className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">이벤트가 없습니다</h3>
-            <p className="text-gray-600">검색 조건을 변경해보세요</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <div key={event.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                      {event.type}
-                    </span>
-                    <span className="text-sm text-gray-500">{event.source}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                    {event.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {event.description}
-                  </p>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {formatDate(event.date)}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {event.location}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{event.genre}</span>
-                    <a
-                      href={event.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      자세히 보기
-                    </a>
-                  </div>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden animate-pulse">
+                <div className="h-48 bg-gray-200"></div>
+                <div className="p-4">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
                 </div>
               </div>
             ))}
           </div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Search className="h-12 w-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">이벤트를 찾을 수 없습니다</h3>
+            <p className="text-gray-600">검색 조건을 변경해보세요.</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {events.map((event) => (
+                <div key={event.id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="relative">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(event.type)}`}>
+                        {event.type}
+                      </span>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getGenreColor(event.genre)}`}>
+                        {event.genre}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {event.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      {event.description}
+                    </p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {formatDate(event.date)}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {event.location}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Tag className="h-4 w-4 mr-2" />
+                        {event.source}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-400">
+                        {new Date(event.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                      {event.link && (
+                        <a
+                          href={event.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  이전
+                </button>
+                
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 text-sm border rounded-lg ${
+                          currentPage === page
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2">...</span>
+                  }
+                  return null
+                })}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  다음
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
