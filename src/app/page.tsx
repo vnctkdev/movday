@@ -110,23 +110,6 @@ export default function HomePage() {
                 MovDay
               </span>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-                홈
-              </Link>
-              <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
-                관리자
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/admin"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                관리자
-              </Link>
-            </div>
           </div>
         </div>
       </nav>

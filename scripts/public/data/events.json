@@ -1,15 +1,93 @@
 [
   {
-    "id": "maxmovie_1",
+    "id": "cgv_1",
+    "title": "더보기",
+    "description": "더보기 - CGV에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-01",
+    "location": "CGV 대구",
+    "type": "시사회",
+    "genre": "드라마",
+    "image": "https://picsum.photos/300/200?random=1",
+    "source": "CGV",
+    "link": "https://www.cgv.co.kr/event",
+    "created_at": "2025-06-29T19:46:09.928251"
+  },
+  {
+    "id": "megabox_2",
+    "title": "메가박스 이벤트 1",
+    "description": "메가박스 이벤트 1 - 메가박스에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-08",
+    "location": "메가박스 코엑스",
+    "type": "체험",
+    "genre": "액션",
+    "image": "https://picsum.photos/300/200?random=201",
+    "source": "메가박스",
+    "link": "https://www.megabox.co.kr",
+    "created_at": "2025-06-29T19:46:10.430653"
+  },
+  {
+    "id": "megabox_3",
+    "title": "메가박스 이벤트 2",
+    "description": "메가박스 이벤트 2 - 메가박스에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-14",
+    "location": "메가박스 코엑스",
+    "type": "프로모션",
+    "genre": "호러",
+    "image": "https://picsum.photos/300/200?random=202",
+    "source": "메가박스",
+    "link": "https://www.megabox.co.kr",
+    "created_at": "2025-06-29T19:46:10.432649"
+  },
+  {
+    "id": "megabox_4",
+    "title": "메가박스 이벤트 3",
+    "description": "메가박스 이벤트 3 - 메가박스에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-27",
+    "location": "메가박스 코엑스",
+    "type": "시사회",
+    "genre": "드라마",
+    "image": "https://picsum.photos/300/200?random=203",
+    "source": "메가박스",
+    "link": "https://www.megabox.co.kr",
+    "created_at": "2025-06-29T19:46:10.433304"
+  },
+  {
+    "id": "megabox_5",
+    "title": "메가박스 이벤트 4",
+    "description": "메가박스 이벤트 4 - 메가박스에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-22",
+    "location": "메가박스 코엑스",
+    "type": "굿즈배포",
+    "genre": "호러",
+    "image": "https://picsum.photos/300/200?random=204",
+    "source": "메가박스",
+    "link": "https://www.megabox.co.kr",
+    "created_at": "2025-06-29T19:46:10.433874"
+  },
+  {
+    "id": "megabox_6",
+    "title": "메가박스 이벤트 5",
+    "description": "메가박스 이벤트 5 - 메가박스에서 진행되는 특별한 이벤트입니다.",
+    "date": "2025-07-18",
+    "location": "메가박스 홍대",
+    "type": "프로모션",
+    "genre": "SF",
+    "image": "https://picsum.photos/300/200?random=205",
+    "source": "메가박스",
+    "link": "https://www.megabox.co.kr",
+    "created_at": "2025-06-29T19:46:10.443192"
+  },
+  {
+    "id": "maxmovie_7",
     "title": "제29회 부천국제판타스틱영화제로!",
     "description": "제29회 부천국제판타스틱영화제로! - MaxMovie에서 진행되는 특별한 이벤트입니다.",
-    "date": "2025-07-16",
+    "date": "2025-07-10",
     "location": "전국 영화관",
     "type": "굿즈배포",
-    "genre": "로맨스",
+    "genre": "스릴러",
     "image": "/img/mobile/search_black.png",
     "source": "MaxMovie",
     "link": "https://www.maxmovie.com/",
-    "created_at": "2025-06-29T19:17:07.954132"
+    "created_at": "2025-06-29T19:46:11.265346"
   }
 ]

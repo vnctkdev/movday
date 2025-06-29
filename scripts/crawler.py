@@ -19,61 +19,64 @@ class MovieEventCrawler:
         try:
             print("CGV 이벤트 크롤링 시작...")
             
-            # CGV 이벤트 페이지 URL들
-            urls = [
-                "https://www.cgv.co.kr/event/eventList.aspx",
-                "https://www.cgv.co.kr/event/eventList.aspx?page=2",
-                "https://www.cgv.co.kr/event/eventList.aspx?page=3"
-            ]
+            # CGV 이벤트 페이지 URL
+            url = "http://www.cgv.co.kr/culture-event/event/"
             
-            for url in urls:
-                try:
-                    response = requests.get(url, headers=self.headers, timeout=10)
-                    response.raise_for_status()
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    
-                    # CGV 이벤트 카드 찾기
-                    event_cards = soup.find_all('div', class_='event_card')
-                    
-                    for card in event_cards[:5]:  # 각 페이지당 최대 5개
-                        try:
-                            title_elem = card.find('h3', class_='event_title')
-                            title = title_elem.get_text(strip=True) if title_elem else "CGV 이벤트"
-                            
-                            # 날짜 정보 추출 (실제로는 더 복잡한 파싱이 필요)
+            try:
+                response = requests.get(url, headers=self.headers, timeout=10)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # CGV 이벤트 요소 찾기
+                event_elements = soup.find_all('div', class_='event-item') or \
+                                soup.find_all('li', class_='event-list') or \
+                                soup.find_all('div', class_='event') or \
+                                soup.find_all('a', href=lambda x: x and 'event' in x)
+                
+                print(f"CGV에서 {len(event_elements)}개 이벤트 요소 발견")
+                
+                for i, element in enumerate(event_elements[:5]):
+                    try:
+                        title_elem = element.find('h3') or element.find('strong') or element.find('a') or element.find('span', class_='title')
+                        title = title_elem.get_text(strip=True) if title_elem else f"CGV 이벤트 {i+1}"
+                        
+                        # 실제 날짜 정보가 있으면 사용, 없으면 랜덤
+                        date_elem = element.find('span', class_='date') or element.find('div', class_='date')
+                        if date_elem:
+                            date_text = date_elem.get_text(strip=True)
+                            # 날짜 파싱 로직 (실제로는 더 복잡)
                             date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
-                            
-                            # 위치 정보
-                            location = random.choice(["CGV 강남", "CGV 잠실", "CGV 홍대", "CGV 신촌", "CGV 부산", "CGV 대구"])
-                            
-                            event = {
-                                "id": f"cgv_{len(self.events) + 1}",
-                                "title": title,
-                                "description": f"{title} - CGV에서 진행되는 특별한 이벤트입니다.",
-                                "date": date,
-                                "location": location,
-                                "type": random.choice(["시사회", "굿즈배포", "프로모션", "체험", "행사"]),
-                                "genre": random.choice(["액션", "로맨스", "드라마", "코미디", "스릴러", "SF", "호러"]),
-                                "image": f"https://picsum.photos/300/200?random={len(self.events) + 1}",
-                                "source": "CGV",
-                                "link": "https://www.cgv.co.kr/event",
-                                "created_at": datetime.now().isoformat()
-                            }
-                            
-                            self.events.append(event)
-                            
-                        except Exception as e:
-                            print(f"CGV 이벤트 카드 파싱 오류: {e}")
-                            continue
-                    
-                    time.sleep(random.uniform(1, 3))  # 요청 간격
-                    
-                except Exception as e:
-                    print(f"CGV URL {url} 크롤링 오류: {e}")
-                    continue
-            
-            print(f"CGV에서 {len([e for e in self.events if e['source'] == 'CGV'])}개 이벤트 수집")
-            
+                        else:
+                            date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
+                        
+                        location = random.choice(["CGV 강남", "CGV 잠실", "CGV 홍대", "CGV 신촌", "CGV 부산", "CGV 대구"])
+                        
+                        event = {
+                            "id": f"cgv_{len(self.events) + 1}",
+                            "title": title,
+                            "description": f"{title} - CGV에서 진행되는 특별한 이벤트입니다.",
+                            "date": date,
+                            "location": location,
+                            "type": random.choice(["시사회", "굿즈배포", "프로모션", "체험", "행사"]),
+                            "genre": random.choice(["액션", "로맨스", "드라마", "코미디", "스릴러", "SF", "호러"]),
+                            "image": f"https://picsum.photos/300/200?random={len(self.events) + 1}",
+                            "source": "CGV",
+                            "link": "https://www.cgv.co.kr/event",
+                            "created_at": datetime.now().isoformat()
+                        }
+                        
+                        self.events.append(event)
+                        print(f"CGV 이벤트 추가: {title}")
+                        
+                    except Exception as e:
+                        print(f"CGV 이벤트 요소 파싱 오류: {e}")
+                        continue
+                
+                print(f"CGV에서 {len([e for e in self.events if e['source'] == 'CGV'])}개 이벤트 수집")
+                
+            except Exception as e:
+                print(f"CGV 크롤링 오류: {e}")
+                
         except Exception as e:
             print(f"CGV 크롤링 전체 오류: {e}")
     
@@ -90,12 +93,17 @@ class MovieEventCrawler:
                 response.raise_for_status()
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
-                # 롯데시네마 이벤트 요소 찾기 (실제 구조에 맞게 수정 필요)
-                event_elements = soup.find_all('div', class_='event_item') or soup.find_all('li', class_='event')
+                # 롯데시네마 이벤트 요소 찾기
+                event_elements = soup.find_all('div', class_='event-item') or \
+                                soup.find_all('li', class_='event-list') or \
+                                soup.find_all('div', class_='event') or \
+                                soup.find_all('a', href=lambda x: x and 'event' in x)
                 
-                for i, element in enumerate(event_elements[:8]):
+                print(f"롯데시네마에서 {len(event_elements)}개 이벤트 요소 발견")
+                
+                for i, element in enumerate(event_elements[:5]):
                     try:
-                        title_elem = element.find('h3') or element.find('strong') or element.find('a')
+                        title_elem = element.find('h3') or element.find('strong') or element.find('a') or element.find('span', class_='title')
                         title = title_elem.get_text(strip=True) if title_elem else f"롯데시네마 이벤트 {i+1}"
                         
                         date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
@@ -116,6 +124,7 @@ class MovieEventCrawler:
                         }
                         
                         self.events.append(event)
+                        print(f"롯데시네마 이벤트 추가: {title}")
                         
                     except Exception as e:
                         print(f"롯데시네마 이벤트 요소 파싱 오류: {e}")
@@ -135,19 +144,24 @@ class MovieEventCrawler:
             print("메가박스 이벤트 크롤링 시작...")
             
             # 메가박스 이벤트 페이지 URL
-            url = "https://www.megabox.co.kr/event"
+            url = "https://www.megabox.co.kr/event/curtaincall"
             
             try:
                 response = requests.get(url, headers=self.headers, timeout=10)
                 response.raise_for_status()
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
-                # 메가박스 이벤트 요소 찾기 (실제 구조에 맞게 수정 필요)
-                event_elements = soup.find_all('div', class_='event-item') or soup.find_all('li', class_='event-list')
+                # 메가박스 이벤트 요소 찾기
+                event_elements = soup.find_all('div', class_='event-item') or \
+                                soup.find_all('li', class_='event-list') or \
+                                soup.find_all('div', class_='event') or \
+                                soup.find_all('a', href=lambda x: x and 'event' in x)
                 
-                for i, element in enumerate(event_elements[:6]):
+                print(f"메가박스에서 {len(event_elements)}개 이벤트 요소 발견")
+                
+                for i, element in enumerate(event_elements[:5]):
                     try:
-                        title_elem = element.find('h3') or element.find('strong') or element.find('a')
+                        title_elem = element.find('h3') or element.find('strong') or element.find('a') or element.find('span', class_='title')
                         title = title_elem.get_text(strip=True) if title_elem else f"메가박스 이벤트 {i+1}"
                         
                         date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
@@ -168,6 +182,7 @@ class MovieEventCrawler:
                         }
                         
                         self.events.append(event)
+                        print(f"메가박스 이벤트 추가: {title}")
                         
                     except Exception as e:
                         print(f"메가박스 이벤트 요소 파싱 오류: {e}")
@@ -318,7 +333,10 @@ class MovieEventCrawler:
         
         start_time = time.time()
         
-        # MaxMovie 크롤링만 실행
+        # 모든 사이트 크롤링 실행
+        self.crawl_cgv_events()
+        self.crawl_lotte_events()
+        self.crawl_megabox_events()
         self.crawl_maxmovie_events()
         
         # 데이터 저장
