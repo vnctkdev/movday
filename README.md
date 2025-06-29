@@ -189,3 +189,4 @@ python crawler.py
 - [Next.js](https://nextjs.org/) - 훌륭한 React 프레임워크
 - [Tailwind CSS](https://tailwindcss.com/) - 유틸리티 우선 CSS 프레임워크
 - [Lucide](https://lucide.dev/) - 아름다운 아이콘 라이브러리
+# Updated at Sun Jun 29 17:12:03 KST 2025
