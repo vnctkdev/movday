@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Search, Filter, Calendar, MapPin, Tag, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Calendar, MapPin, Tag, ExternalLink, ChevronLeft } from 'lucide-react'
 
 interface Event {
   id: string
@@ -42,11 +42,7 @@ export default function EventsPage() {
   const genres = ['액션', '로맨스', '드라마', '코미디', '스릴러', 'SF', '호러']
   const sources = ['CGV', '롯데시네마', '메가박스', '영화사', '독립영화관', '문화센터']
 
-  useEffect(() => {
-    fetchEvents()
-  }, [searchTerm, selectedType, selectedGenre, selectedSource, currentPage])
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -70,7 +66,11 @@ export default function EventsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [searchTerm, selectedType, selectedGenre, selectedSource, currentPage])
+
+  useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
