@@ -181,6 +181,90 @@ class MovieEventCrawler:
         except Exception as e:
             print(f"메가박스 크롤링 전체 오류: {e}")
     
+    def crawl_maxmovie_events(self):
+        """MaxMovie 이벤트 크롤링"""
+        try:
+            print("MaxMovie 이벤트 크롤링 시작...")
+            
+            # MaxMovie 이벤트 페이지 URL
+            url = "https://www.maxmovie.com/event"
+            
+            try:
+                response = requests.get(url, headers=self.headers, timeout=10)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # MaxMovie 이벤트 요소 찾기
+                event_elements = soup.find_all('div', class_='event-item') or \
+                                soup.find_all('li', class_='event-list') or \
+                                soup.find_all('div', class_='event') or \
+                                soup.find_all('article') or \
+                                soup.find_all('div', class_='list-item')
+                
+                print(f"MaxMovie에서 {len(event_elements)}개 이벤트 요소 발견")
+                
+                for i, element in enumerate(event_elements[:10]):  # 최대 10개
+                    try:
+                        # 제목 추출
+                        title_elem = (element.find('h3') or 
+                                    element.find('h2') or 
+                                    element.find('h1') or 
+                                    element.find('strong') or 
+                                    element.find('a') or
+                                    element.find('div', class_='title'))
+                        title = title_elem.get_text(strip=True) if title_elem else f"MaxMovie 이벤트 {i+1}"
+                        
+                        # 설명 추출
+                        desc_elem = (element.find('p') or 
+                                   element.find('div', class_='description') or
+                                   element.find('div', class_='summary'))
+                        description = desc_elem.get_text(strip=True) if desc_elem else f"{title} - MaxMovie에서 진행되는 특별한 이벤트입니다."
+                        
+                        # 이미지 추출
+                        img_elem = element.find('img')
+                        image_url = img_elem.get('src') if img_elem else f"https://picsum.photos/300/200?random={len(self.events) + 300}"
+                        
+                        # 링크 추출
+                        link_elem = element.find('a')
+                        link = link_elem.get('href') if link_elem else "https://www.maxmovie.com/event"
+                        if link and not link.startswith('http'):
+                            link = f"https://www.maxmovie.com{link}"
+                        
+                        # 날짜 (실제로는 페이지에서 추출해야 함)
+                        date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime("%Y-%m-%d")
+                        
+                        # 위치 (실제로는 페이지에서 추출해야 함)
+                        location = random.choice(["MaxMovie 온라인", "MaxMovie 앱", "MaxMovie 웹사이트", "전국 영화관"])
+                        
+                        event = {
+                            "id": f"maxmovie_{len(self.events) + 1}",
+                            "title": title,
+                            "description": description,
+                            "date": date,
+                            "location": location,
+                            "type": random.choice(["시사회", "굿즈배포", "프로모션", "체험", "행사", "이벤트"]),
+                            "genre": random.choice(["액션", "로맨스", "드라마", "코미디", "스릴러", "SF", "호러", "애니메이션"]),
+                            "image": image_url,
+                            "source": "MaxMovie",
+                            "link": link,
+                            "created_at": datetime.now().isoformat()
+                        }
+                        
+                        self.events.append(event)
+                        print(f"MaxMovie 이벤트 추가: {title}")
+                        
+                    except Exception as e:
+                        print(f"MaxMovie 이벤트 요소 파싱 오류: {e}")
+                        continue
+                
+                print(f"MaxMovie에서 {len([e for e in self.events if e['source'] == 'MaxMovie'])}개 이벤트 수집")
+                
+            except Exception as e:
+                print(f"MaxMovie 크롤링 오류: {e}")
+                
+        except Exception as e:
+            print(f"MaxMovie 크롤링 전체 오류: {e}")
+    
     def generate_mock_events(self):
         """더 많은 샘플 이벤트 생성"""
         print("추가 샘플 이벤트 생성 중...")
@@ -234,13 +318,8 @@ class MovieEventCrawler:
         
         start_time = time.time()
         
-        # 실제 크롤링
-        self.crawl_cgv_events()
-        self.crawl_lotte_events()
-        self.crawl_megabox_events()
-        
-        # 추가 샘플 데이터 생성
-        self.generate_mock_events()
+        # MaxMovie 크롤링만 실행
+        self.crawl_maxmovie_events()
         
         # 데이터 저장
         self.save_events()

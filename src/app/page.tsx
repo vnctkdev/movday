@@ -1,7 +1,103 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Calendar, Search, TrendingUp, Users, Film, Star, ArrowRight, Play, Zap, Shield } from 'lucide-react'
+import { Calendar, Search, Film, Shield, MapPin, Tag, ExternalLink } from 'lucide-react'
+
+interface Event {
+  id: string
+  title: string
+  description: string
+  date: string
+  location: string
+  type: string
+  genre: string
+  image: string
+  source: string
+  link: string
+  created_at: string
+}
 
 export default function HomePage() {
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedType, setSelectedType] = useState('')
+  const [selectedGenre, setSelectedGenre] = useState('')
+  const [selectedSource, setSelectedSource] = useState('')
+
+  const eventTypes = ['시사회', '굿즈배포', '프로모션', '체험', '행사', '이벤트']
+  const genres = ['액션', '로맨스', '드라마', '코미디', '스릴러', 'SF', '호러', '애니메이션']
+  const sources = ['CGV', '롯데시네마', '메가박스', 'MaxMovie', '영화사', '독립영화관', '문화센터']
+
+  useEffect(() => {
+    fetchEvents()
+  }, [])
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('/data/events.json')
+      const data = await response.json()
+      setEvents(data)
+    } catch (error) {
+      console.error('이벤트 데이터를 불러오는데 실패했습니다:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedType('')
+    setSelectedGenre('')
+    setSelectedSource('')
+  }
+
+  const getTypeColor = (type: string) => {
+    const colors = {
+      '시사회': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      '굿즈배포': 'bg-green-500/20 text-green-300 border-green-500/30',
+      '프로모션': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      '체험': 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+      '행사': 'bg-red-500/20 text-red-300 border-red-500/30',
+      '이벤트': 'bg-pink-500/20 text-pink-300 border-pink-500/30'
+    }
+    return colors[type as keyof typeof colors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+  }
+
+  const getGenreColor = (genre: string) => {
+    const colors = {
+      '액션': 'bg-red-500/20 text-red-300 border-red-500/30',
+      '로맨스': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
+      '드라마': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      '코미디': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
+      '스릴러': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      'SF': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+      '호러': 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+      '애니메이션': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+    }
+    return colors[genre as keyof typeof colors] || 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+  }
+
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesType = !selectedType || event.type === selectedType
+    const matchesGenre = !selectedGenre || event.genre === selectedGenre
+    const matchesSource = !selectedSource || event.source === selectedSource
+    
+    return matchesSearch && matchesType && matchesGenre && matchesSource
+  })
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Navigation */}
@@ -18,20 +114,17 @@ export default function HomePage() {
               <Link href="/" className="text-gray-300 hover:text-white transition-colors">
                 홈
               </Link>
-              <Link href="/events" className="text-gray-300 hover:text-white transition-colors">
-                이벤트
-              </Link>
-              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-                소개
+              <Link href="/admin" className="text-gray-300 hover:text-white transition-colors">
+                관리자
               </Link>
             </div>
             <div className="flex items-center space-x-4">
               <Link
-                href="/events"
+                href="/admin"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
               >
-                <Search className="h-4 w-4 mr-2" />
-                이벤트 보기
+                <Shield className="h-4 w-4 mr-2" />
+                관리자
               </Link>
             </div>
           </div>
@@ -42,224 +135,190 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
           <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-600/20 border border-blue-500/30 text-blue-300 text-sm font-medium mb-8">
-              <Zap className="h-4 w-4 mr-2" />
-              영화 이벤트 통합 플랫폼
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 MovDay
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              CGV, 롯데시네마, 메가박스의 모든 영화 이벤트를 한 곳에서 만나보세요.
-              <br />
-              <span className="text-blue-400">시사회부터 굿즈 배포까지</span> 놓치지 마세요!
+            <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              MaxMovie, CGV, 롯데시네마, 메가박스의 모든 영화 이벤트를 한 곳에서 만나보세요.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                href="/events"
-                className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center"
-              >
-                <Play className="h-5 w-5 mr-2 group-hover:translate-x-1 transition-transform" />
-                이벤트 둘러보기
-                <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              
-              <button className="group border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 flex items-center">
-                <Shield className="h-5 w-5 mr-2" />
-                안전한 서비스
-              </button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-800/50">
+      {/* Search and Filters */}
+      <section className="py-8 bg-gray-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Film className="h-8 w-8 text-white" />
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <input
+                    type="text"
+                    placeholder="이벤트 검색..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+                  />
+                </div>
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">500+</h3>
-              <p className="text-gray-400">수집된 이벤트</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-purple-600 to-purple-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-white" />
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2">
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="px-3 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                >
+                  <option value="">모든 유형</option>
+                  {eventTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedGenre}
+                  onChange={(e) => setSelectedGenre(e.target.value)}
+                  className="px-3 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                >
+                  <option value="">모든 장르</option>
+                  {genres.map(genre => (
+                    <option key={genre} value={genre}>{genre}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedSource}
+                  onChange={(e) => setSelectedSource(e.target.value)}
+                  className="px-3 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+                >
+                  <option value="">모든 출처</option>
+                  {sources.map(source => (
+                    <option key={source} value={source}>{source}</option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-3 text-gray-300 border border-gray-600 rounded-lg hover:bg-gray-700/50 transition-colors"
+                >
+                  초기화
+                </button>
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">10K+</h3>
-              <p className="text-gray-400">사용자</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-gradient-to-r from-pink-600 to-pink-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold text-white mb-2">99%</h3>
-              <p className="text-gray-400">만족도</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24">
+      {/* Events Section */}
+      <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              왜 <span className="text-blue-400">MovDay</span>를 선택해야 할까요?
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              여러 영화관을 돌아다닐 필요 없이 한 곳에서 모든 이벤트를 확인하세요
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-blue-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Search className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">통합 검색</h3>
-              <p className="text-gray-400 leading-relaxed">
-                CGV, 롯데시네마, 메가박스의 모든 이벤트를 한 번에 검색하고 필터링할 수 있습니다.
-              </p>
+          {/* Results Info */}
+          <div className="flex justify-between items-center mb-8">
+            <div className="text-lg text-gray-300">
+              총 <span className="text-blue-400 font-semibold">{filteredEvents.length}</span>개의 이벤트를 찾았습니다.
             </div>
-            
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-purple-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-purple-600 to-purple-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Calendar className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">실시간 업데이트</h3>
-              <p className="text-gray-400 leading-relaxed">
-                새로운 이벤트가 등록되면 즉시 알려드립니다. 놓치는 일은 없어요!
-              </p>
-            </div>
-            
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-pink-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-pink-600 to-pink-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Calendar className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">위치 기반</h3>
-              <p className="text-gray-400 leading-relaxed">
-                내 주변 영화관의 이벤트를 쉽게 찾을 수 있습니다.
-              </p>
-            </div>
-            
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-green-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-green-600 to-green-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Star className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">추천 시스템</h3>
-              <p className="text-gray-400 leading-relaxed">
-                관심사에 맞는 이벤트를 AI가 추천해드립니다.
-              </p>
-            </div>
-            
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-yellow-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-yellow-600 to-yellow-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">안전한 서비스</h3>
-              <p className="text-gray-400 leading-relaxed">
-                공식 영화관 정보만을 제공하여 안전하고 신뢰할 수 있습니다.
-              </p>
-            </div>
-            
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 hover:border-indigo-500/50 transition-all duration-300 group">
-              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 w-12 h-12 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">빠른 속도</h3>
-              <p className="text-gray-400 leading-relaxed">
-                최적화된 성능으로 빠르고 부드러운 사용자 경험을 제공합니다.
-              </p>
+            <div className="text-sm text-gray-400">
+              MaxMovie에서 실시간으로 수집된 데이터
             </div>
           </div>
+
+          {/* Events Grid */}
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden animate-pulse">
+                  <div className="h-48 bg-gray-700"></div>
+                  <div className="p-4">
+                    <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-700 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-700 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <Search className="h-12 w-12 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">이벤트를 찾을 수 없습니다</h3>
+              <p className="text-gray-500">검색 조건을 변경해보세요.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredEvents.map((event) => (
+                <div key={event.id} className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden hover:border-blue-500/50 transition-all duration-300 group">
+                  <div className="relative">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getTypeColor(event.type)}`}>
+                        {event.type}
+                      </span>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getGenreColor(event.genre)}`}>
+                        {event.genre}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-blue-400 transition-colors">
+                      {event.title}
+                    </h3>
+                    
+                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                      {event.description}
+                    </p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-300">
+                        <Calendar className="h-4 w-4 mr-2 text-blue-400" />
+                        {formatDate(event.date)}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-300">
+                        <MapPin className="h-4 w-4 mr-2 text-green-400" />
+                        {event.location}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-300">
+                        <Tag className="h-4 w-4 mr-2 text-purple-400" />
+                        {event.source}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">
+                        {new Date(event.created_at).toLocaleDateString('ko-KR')}
+                      </span>
+                      {event.link && (
+                        <a
+                          href={event.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            지금 바로 시작해보세요!
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            수많은 영화 이벤트가 여러분을 기다리고 있습니다.
-          </p>
-          <Link
-            href="/events"
-            className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            이벤트 둘러보기
-            <ArrowRight className="h-5 w-5 ml-2" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center mb-4">
-                <Film className="h-8 w-8 text-blue-400 mr-3" />
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  MovDay
-                </span>
-              </div>
-              <p className="text-gray-400 mb-4 max-w-md">
-                영화 이벤트 통합 플랫폼으로, 여러분의 영화 관람 경험을 더욱 특별하게 만들어드립니다.
-              </p>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition-colors">
-                  <span className="text-gray-400">📱</span>
-                </div>
-                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition-colors">
-                  <span className="text-gray-400">📧</span>
-                </div>
-                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition-colors">
-                  <span className="text-gray-400">🐦</span>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-white font-semibold mb-4">서비스</h3>
-              <ul className="space-y-2">
-                <li><Link href="/events" className="text-gray-400 hover:text-white transition-colors">이벤트</Link></li>
-                <li><Link href="/about" className="text-gray-400 hover:text-white transition-colors">소개</Link></li>
-                <li><Link href="/help" className="text-gray-400 hover:text-white transition-colors">도움말</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-white font-semibold mb-4">지원</h3>
-              <ul className="space-y-2">
-                <li><Link href="/contact" className="text-gray-400 hover:text-white transition-colors">문의하기</Link></li>
-                <li><Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">개인정보처리방침</Link></li>
-                <li><Link href="/terms" className="text-gray-400 hover:text-white transition-colors">이용약관</Link></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2024 MovDay. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
-} 
+}
